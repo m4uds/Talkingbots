@@ -1,7 +1,7 @@
 function main(){
 
-    //setInterval(buildConvosation, 1000);
-    buildConvosation()
+    setInterval(buildConvosation, 1000);
+    
 
 }
 
