@@ -15,11 +15,11 @@ async function LoadConversation() {
 
 async function buildConvosation (){
     var data = []
-    await LoadConversation().then((Response => data = Response))
-     console.log(data)
-     $("#text-cont").html("")
+    await LoadConversation().then((Response => data = Response));
+     console.log(data);
+    $("#text-cont").html("");
     for (const element of data) {
-        console.log()
+        console.log();
         
         $( "#text-cont" ).append( "<h1>"+Object.values(element)+"</h1>" );
       }
