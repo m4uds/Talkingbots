@@ -1,7 +1,7 @@
 function main(){
 
     setInterval(buildConvosation, 1000);
-    
+    console.log("=)")
 
 }
 
