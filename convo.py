@@ -43,6 +43,7 @@ def main(chat_history):
     if last_response.startswith("DialoGPT"):
         blender = blenderBot(last_response)
         handle_json.appendJSON("Blender: " + blender)
+        print("Blender: " + blender)
     
     blender = last_response
     new_input_ids = tokenizer_Dialo.encode((blender) + tokenizer_Dialo.eos_token, return_tensors='pt')
@@ -50,6 +51,7 @@ def main(chat_history):
     # pretty print last ouput tokens from bot
     dialo = tokenizer_Dialo.decode(chat_history_ids[:, new_input_ids.shape[-1]:][0], skip_special_tokens=True)
     handle_json.appendJSON("DialoGPT: "+ dialo)
+    print("DialoGPT: "+ dialo)
     
     
     for step in range(5):
@@ -58,6 +60,7 @@ def main(chat_history):
         blender = blenderBot(dialo)
         if blender != blender_last:
             handle_json.appendJSON("Blender: " + blender)
+            print("Blender: " + blender)
         else:
             print("blender confused")
             x = False
@@ -71,12 +74,13 @@ def main(chat_history):
         else:
             bot_input_ids = new_input_ids
         # generated a response while limiting the total chat history to 1000 tokens, 
-        chat_history_ids = model_Dialo.generate(bot_input_ids, max_length=1000, pad_token_id=tokenizer_Dialo.eos_token_id,temperature= temp())
+        chat_history_ids = model_Dialo.generate(bot_input_ids, max_length=1000, pad_token_id=tokenizer_Dialo.eos_token_id, top_k=100, top_p=0.7, temperature= temp())
         # pretty print last ouput tokens from bot
         dialo = tokenizer_Dialo.decode(chat_history_ids[:, bot_input_ids.shape[-1]:][0], skip_special_tokens=True)
 
         if dialo != dialo_last:
             handle_json.appendJSON("DialoGPT: " + dialo)
+            print("DialoGPT: "+ dialo)
         else:
             print("DialoGPT confused")
             x = False
