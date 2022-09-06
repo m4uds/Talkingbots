@@ -5,6 +5,32 @@ import numpy as np
 import json
 import handle_json
 import random
+
+from time import gmtime, strftime
+
+def appendJSON(input_string):
+
+    log_file = f = open('conversation_log.json')
+    data =  json.load(log_file)
+    time_now = strftime("%Y-%m-%d %H:%M:%S", gmtime())
+    data["Conversation"].append({time_now: input_string})
+    with open('conversation_log.json', 'w') as nf:
+        json.dump(data, nf)
+    if len(data["Conversation"]) > 5 :
+        with open('conversation.json', "w") as nf:
+            json.dump(data["Conversation"][-5:], nf)
+
+
+#appendJSON("no thanks")
+def get_last():
+    log_file = f = open('conversation_log.json')
+    data =  json.load(log_file)
+    data = data["Conversation"][-1]
+    for key, value in data.items():
+        return(value)
+
+print("innit begins")
+
 def temp():
     random_num = random.random()
     
@@ -12,7 +38,7 @@ def temp():
     print(random_num)
     return random_num
 
-    #load models
+#load models
 tokenizer_blender = AutoTokenizer.from_pretrained("models/blenderbot-400M-distill")
 model_blender = AutoModelForSeq2SeqLM.from_pretrained("models/blenderbot-400M-distill")
 tokenizer_Dialo = AutoTokenizer.from_pretrained("models/DialoGPT-medium")
@@ -21,11 +47,14 @@ chat_history = False
 chat_history_ids = []
 
 def blenderBot(message):
-  inputs = tokenizer_blender(message, return_tensors="pt")
-  result = model_blender.generate(**inputs, output_scores=True)
-  blender = tokenizer_blender.decode(result[0])
-  blender_output = re.search(r'<s> (.*?)</s>', blender).group(1)
-  return blender_output
+    if len(message) > 128:
+        message = message[:128]
+        print(message)
+    inputs = tokenizer_blender(message, return_tensors="pt")
+    result = model_blender.generate(**inputs, output_scores=True)
+    blender = tokenizer_blender.decode(result[0])
+    blender_output = re.search(r'<s> (.*?)</s>', blender).group(1)
+    return blender_output
 
 
 
@@ -41,8 +70,8 @@ def main(chat_history):
     print(last_response)
 
     if last_response.startswith("DialoGPT"):
-        blender = blenderBot(last_response)
-        handle_json.appendJSON("Blender: " + blender)
+        blender = blenderBot("last_response")
+        appendJSON("Blender: " + blender)
         print("Blender: " + blender)
     
     blender = last_response
@@ -50,7 +79,7 @@ def main(chat_history):
     chat_history_ids = model_Dialo.generate(new_input_ids, max_length=100, pad_token_id=tokenizer_Dialo.eos_token_id, do_sample=True, top_k=100, top_p=0.7, temperature=0.96)
     # pretty print last ouput tokens from bot
     dialo = tokenizer_Dialo.decode(chat_history_ids[:, new_input_ids.shape[-1]:][0], skip_special_tokens=True)
-    handle_json.appendJSON("DialoGPT: "+ dialo)
+    appendJSON("DialoGPT: "+ dialo)
     print("DialoGPT: "+ dialo)
     
     
@@ -59,7 +88,7 @@ def main(chat_history):
         blender_last = blender
         blender = blenderBot(dialo)
         if blender != blender_last:
-            handle_json.appendJSON("Blender: " + blender)
+            appendJSON("Blender: " + blender)
             print("Blender: " + blender)
         else:
             print("blender confused")
@@ -79,7 +108,7 @@ def main(chat_history):
         dialo = tokenizer_Dialo.decode(chat_history_ids[:, bot_input_ids.shape[-1]:][0], skip_special_tokens=True)
 
         if dialo != dialo_last:
-            handle_json.appendJSON("DialoGPT: " + dialo)
+            appendJSON("DialoGPT: " + dialo)
             print("DialoGPT: "+ dialo)
         else:
             print("DialoGPT confused")
