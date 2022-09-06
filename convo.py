@@ -6,7 +6,8 @@ import json
 import handle_json
 import random
 
-from time import gmtime, strftime
+
+from time import gmtime, strftime, sleep
 
 def appendJSON(input_string):
 
@@ -84,7 +85,7 @@ def main(chat_history):
     
     
     for step in range(5):
-        
+        sleep(2)
         blender_last = blender
         blender = blenderBot(dialo)
         if blender != blender_last:
@@ -94,7 +95,7 @@ def main(chat_history):
             print("blender confused")
             x = False
         
-
+        sleep(2)
         dialo_last = dialo
         new_input_ids = tokenizer_Dialo.encode((blender) + tokenizer_Dialo.eos_token, return_tensors='pt')
         # append the new input tokens to the chat history
