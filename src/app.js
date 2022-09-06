@@ -1,11 +1,11 @@
+console.log("m4uds made this")
+
+
 function main(){
 
-    setInterval(buildConvosation, 2000);
-    console.log("m4uds made this")
-
+    buildConvosation()
+    
 }
-
-
 async function LoadConversation() {
     //change back to [-5:]
     const response = await fetch("conversation.json");
@@ -28,5 +28,7 @@ async function buildConvosation (){
 
 }
 
-main()
+$( window).on("load", setInterval(function (){
+    main()},
+    2000));
 
