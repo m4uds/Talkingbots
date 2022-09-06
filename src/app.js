@@ -1,6 +1,6 @@
 function main(){
 
-    setInterval(buildConvosation, 1000);
+    setInterval(buildConvosation, 2000);
     console.log("m4uds made this")
 
 }
