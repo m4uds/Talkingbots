@@ -5,21 +5,9 @@ import numpy as np
 import json
 import handle_json
 import random
-
-
 from time import gmtime, strftime, sleep
+import datetime
 
-def appendJSON(input_string):
-
-    log_file = f = open('conversation_log.json')
-    data =  json.load(log_file)
-    time_now = strftime("%Y-%m-%d %H:%M:%S", gmtime())
-    data["Conversation"].append({time_now: input_string})
-    with open('conversation_log.json', 'w') as nf:
-        json.dump(data, nf)
-    if len(data["Conversation"]) > 5 :
-        with open('conversation.json', "w") as nf:
-            json.dump(data["Conversation"][-5:], nf)
 
 
 #appendJSON("no thanks")
@@ -33,9 +21,7 @@ def get_last():
 print("innit begins")
 
 def temp():
-    random_num = random.random()
-    
-    random_num = round(random_num, 2)
+    random_num = random.randint(5,85)
     print(random_num)
     return random_num
 
@@ -52,7 +38,7 @@ def blenderBot(message):
         message = message[:128]
         print(message)
     inputs = tokenizer_blender(message, return_tensors="pt")
-    result = model_blender.generate(**inputs, output_scores=True)
+    result = model_blender.generate(**inputs, output_scores=True, top_k=100, top_p=0.5, temperature=1, num_beams= temp())
     blender = tokenizer_blender.decode(result[0])
     blender_output = re.search(r'<s> (.*?)</s>', blender).group(1)
     return blender_output
@@ -85,17 +71,26 @@ def main(chat_history):
     
     
     for step in range(5):
-        sleep(2)
+        
+        
+      
+        
+        
+        
         blender_last = blender
         blender = blenderBot(dialo)
+         
         if blender != blender_last:
+            ts_ago = seconds_since_last_TS()
+            if ts_ago < 10:
+                sleep(10-ts_ago)
             appendJSON("Blender: " + blender)
             print("Blender: " + blender)
         else:
             print("blender confused")
             x = False
         
-        sleep(2)
+        
         dialo_last = dialo
         new_input_ids = tokenizer_Dialo.encode((blender) + tokenizer_Dialo.eos_token, return_tensors='pt')
         # append the new input tokens to the chat history
@@ -104,11 +99,15 @@ def main(chat_history):
         else:
             bot_input_ids = new_input_ids
         # generated a response while limiting the total chat history to 1000 tokens, 
-        chat_history_ids = model_Dialo.generate(bot_input_ids, max_length=1000, pad_token_id=tokenizer_Dialo.eos_token_id, top_k=100, top_p=0.7, temperature= temp())
+        chat_history_ids = model_Dialo.generate(new_input_ids, max_length=100, pad_token_id=tokenizer_Dialo.eos_token_id, do_sample=True, top_k=200, top_p=1.5, temperature=0.75)
+    
         # pretty print last ouput tokens from bot
         dialo = tokenizer_Dialo.decode(chat_history_ids[:, bot_input_ids.shape[-1]:][0], skip_special_tokens=True)
 
         if dialo != dialo_last:
+            ts_ago = seconds_since_last_TS()
+            if ts_ago < 10:
+                sleep(10-ts_ago)
             appendJSON("DialoGPT: " + dialo)
             print("DialoGPT: "+ dialo)
         else:
@@ -119,12 +118,38 @@ def main(chat_history):
 
 
 
+def appendJSON(input_string):
+
+    log_file = f = open('conversation_log.json')
+    data =  json.load(log_file)
+    time_now = str(datetime.datetime.now())
+    data["Conversation"].append({time_now: input_string})
+    with open('conversation_log.json', 'w') as nf:
+        json.dump(data, nf)
+    if len(data["Conversation"]) > 5 :
+        with open('conversation.json', "w") as nf:
+            json.dump(data["Conversation"][-5:], nf)
 
 
 
 
-
-
+def seconds_since_last_TS():
+    log_file = f = open('conversation_log.json')
+    data =  json.load(log_file)
+    data = data["Conversation"][-1]
+    for key, value in data.items():
+        
+        last_time = datetime.datetime.strptime(key, "%Y-%m-%d %H:%M:%S.%f")
+        time_now = datetime.datetime.now()
+        seconds = (time_now - last_time).seconds
+        seconds = float(seconds)
+        print(seconds)
+        return(seconds)
+        
+        
+        print("Seconds since last: " + str(seconds))
+        
+        return(seconds)
 
 
 

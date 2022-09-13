@@ -1,8 +1,20 @@
 console.log("m4uds made this")
 
+var options = {
+    "animate": true,
+    "patternWidth": 150,
+    "patternHeight": 150,
+    "grainOpacity": 0.2,
+    "grainDensity": 1,
+    "grainWidth": 1,
+    "grainHeight": 1}
+
+grained("#display-cont", options);
+
+
 
 function main(){
-
+        
     buildConvosation()
     
 }
@@ -19,10 +31,17 @@ async function buildConvosation (){
      console.log(data);
     $("#text-cont").html("");
     for (const element of data) {
-        console.log();
-        
-        $( "#text-cont" ).append( "<h1>"+Object.values(element)+"</h1>" );
-      }
+        var text = Object.values(element)[0]
+        if (text.startsWith('Blender:')){
+            text = text.replace('Blender:','');
+            $( "#text-cont" ).append( "<div class = 'left'><h1>"+text+"</h1></div>" );}
+        else if (text.startsWith('DialoGPT:')){
+            text = text.replace('DialoGPT:','');
+            $( "#text-cont" ).append( "<div class = 'right'> <h1>"+text+"</h1> </div>" )
+
+        }
+     
+        } 
       
 
 
@@ -30,5 +49,5 @@ async function buildConvosation (){
 
 $( window).on("load", setInterval(function (){
     main()},
-    2000));
+    4000));
 
